@@ -4,5 +4,5 @@ class Driver < ApplicationRecord
 	validates :phone_number,uniqueness: true,:format => { :with => /\A(\+1)?[0-9]{10}\z/, :message => "Not a valid 10-digit telephone number" }
 	validates :car_number,uniqueness: true
 	validates :license_number,uniqueness: true
-	has_one :location
+	has_one :location,dependent: :destroy
 end

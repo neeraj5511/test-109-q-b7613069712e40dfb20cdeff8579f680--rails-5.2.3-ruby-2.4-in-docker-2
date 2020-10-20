@@ -1,52 +1,59 @@
 class Api::V1::DriverController < ActionController::Base
 	skip_before_action :verify_authenticity_token
 	def register
-		@driver = Driver.create(driver_params)
+		@driver = Driver.new(driver_params)
 		if @driver.save
-		response = {status: 201,body: 
-			         {
-			           id: @driver.id,
-			           name: @driver.name,
-			           email: @driver.email,
-			           phone_number: @driver.phone_number,
-			           license_number: @driver.license_number,
-			           car_number: @driver.car_number
-			         }
-			    }
+		response = {
+            status: 201,
+            body: 
+            {
+               id: @driver.id,
+               name: @driver.name,
+               email: @driver.email,
+               phone_number: @driver.phone_number,
+               license_number: @driver.license_number,
+               car_number: @driver.car_number
+            }
+		}
         render status: response[:status], json: response[:body]
         else 
+            
         	response = {
-        		status: "Failure",
+        		status: "failure",
         	}
-        	return render :json =>  {:status => response[:status], :reason => @driver.errors.full_messages.first}
+        	render status: 400 ,:json =>  {:status => response[:status], :reason => @driver.errors.full_messages}
         end
 	end
     
     def sendLocation
-        @driver = Driver.find(params[:driver_id])
-        @location = Location.create!(location_params.merge(driver_id: @driver.id))
+        @location = Location.new(location_params.merge(driver_id: driver.id))
      	if @location.save
       		response = {
-        		status: "Success",
         		body: {
-        			id: @location.id
+        		    status: "success"
         		}
         	}
-       		render :show, status: response[:status]
+            respond_to do |format|
+                format.json { render status: 202, json: response[:body] }
+            end
         else
 	        response = {
-	        		status: "Failure"
-	        	}	
-	        return render :show, :json =>  {:status => response[:status], :reason => @driver.errors.full_messages.first}
+                body: {
+	        		status: "failure",
+                    reason:  @location.errors.full_messages
+                }
+	        }	
+            respond_to do |format|
+                format.json { render status: 400,json: response[:body] }
+            end
         end
     end
 
     private
 
-    # def driver
-    # 	binding.pry
-    #   Driver.find_by!(id: params[:id])
-    # end
+    def driver
+      @driver = Driver.find(params[:driver_id])
+    end
 
 	def driver_params
 		params.require(:driver).permit(:name,:email,:phone_number,:license_number,:car_number)

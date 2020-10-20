@@ -8,6 +8,12 @@ Rails.application.routes.draw do
         end
           post :sendLocation
       end
+
+      resources :passenger do
+        collection do
+          post :available_cab
+        end
+      end
     end
   end
 end
